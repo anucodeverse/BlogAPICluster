@@ -1,9 +1,8 @@
+//user creation
 const User = require("../models/user");
-
 exports.createUser = async (req, res) => {
   try {
     const user = await User.create(req.body);
-
     res.status(201).json(user);
   } catch (error) {
     res.status(500).json({
@@ -11,7 +10,7 @@ exports.createUser = async (req, res) => {
     });
   }
 };
-
+//get user
 exports.getUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -23,7 +22,7 @@ exports.getUsers = async (req, res) => {
     });
   }
 };
-
+//put user
 exports.updateUser = async (req, res) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
