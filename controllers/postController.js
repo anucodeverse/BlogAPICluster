@@ -1,5 +1,5 @@
+//post creation
 const Post = require("../models/post");
-
 exports.createPost = async (req, res) => {
   try {
     const post = await Post.create(req.body);
@@ -10,7 +10,7 @@ exports.createPost = async (req, res) => {
     });
   }
 };
-
+//get post
 exports.getPosts = async (req, res) => {
   try {
     const posts = await Post.find().populate("authorId");
@@ -22,7 +22,7 @@ exports.getPosts = async (req, res) => {
     });
   }
 };
-
+//delete post
 exports.deletePost = async (req, res) => {
   try {
     const post = await Post.findByIdAndDelete(req.params.id);
@@ -34,7 +34,7 @@ exports.deletePost = async (req, res) => {
     });
   }
 };
-
+//top 3 posts
 exports.getRecentPosts = async (req, res) => {
   try {
     const posts = await Post.find()
