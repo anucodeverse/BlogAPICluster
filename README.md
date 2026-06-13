@@ -44,8 +44,6 @@ week-10-project/
 
 ---
 
-## Features Implemented
-
 ### Posts API
 
 * Create a new post
