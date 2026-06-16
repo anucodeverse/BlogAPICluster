@@ -1,6 +1,6 @@
 const Post = require("../models/post");
 
-// Post creation
+// Create post
 exports.createPost = async (req, res) => {
   try {
     const { title, content, authorId } = req.body;
@@ -29,7 +29,6 @@ exports.createPost = async (req, res) => {
 exports.getPosts = async (req, res) => {
   try {
     const posts = await Post.find().populate("authorId");
-
     res.json(posts);
   } catch (error) {
     res.status(500).json({
@@ -91,7 +90,7 @@ exports.deletePost = async (req, res) => {
   }
 };
 
-// Top 3 recent posts
+// Get recent posts
 exports.getRecentPosts = async (req, res) => {
   try {
     const posts = await Post.find()
