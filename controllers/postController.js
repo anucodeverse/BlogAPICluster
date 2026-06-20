@@ -1,8 +1,10 @@
 const Post = require("../models/post");
-const postSchema = require("../validators/postValidator");
 const cloudinary = require("../config/cloudinary");
 const streamifier = require("streamifier");
 
+// ========================
+// CREATE POST
+// ========================
 exports.createPost = async (req, res) => {
   try {
     console.log("FILE:", req.file);
@@ -11,13 +13,18 @@ exports.createPost = async (req, res) => {
 
     let imageUrl = "";
 
-    // 🚨 THIS IS WHERE YOUR BUG WAS
     if (req.file) {
       imageUrl = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: "posts" },
           (error, result) => {
-            if (error) return reject(error);
+            if (error) {
+              console.log("Cloudinary Error:", error);
+              return reject(error);
+            }
+
+            console.log("Cloudinary Result:", result);
+
             resolve(result.secure_url);
           }
         );
@@ -43,7 +50,6 @@ exports.createPost = async (req, res) => {
   }
 };
 
-
 // ========================
 // GET ALL POSTS
 // ========================
@@ -52,12 +58,9 @@ exports.getPosts = async (req, res) => {
     const posts = await Post.find().populate("authorId");
     return res.status(200).json(posts);
   } catch (error) {
-    return res.status(500).json({
-      message: error.message,
-    });
+    return res.status(500).json({ message: error.message });
   }
 };
-
 
 // ========================
 // GET POST BY ID
@@ -67,25 +70,14 @@ exports.getPostById = async (req, res) => {
     const post = await Post.findById(req.params.id).populate("authorId");
 
     if (!post) {
-      return res.status(404).json({
-        message: "Post not found",
-      });
+      return res.status(404).json({ message: "Post not found" });
     }
 
     return res.status(200).json(post);
   } catch (error) {
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        message: "Invalid post ID",
-      });
-    }
-
-    return res.status(500).json({
-      message: error.message,
-    });
+    return res.status(500).json({ message: error.message });
   }
 };
-
 
 // ========================
 // DELETE POST
@@ -95,29 +87,17 @@ exports.deletePost = async (req, res) => {
     const post = await Post.findByIdAndDelete(req.params.id);
 
     if (!post) {
-      return res.status(404).json({
-        message: "Post not found",
-      });
+      return res.status(404).json({ message: "Post not found" });
     }
 
     return res.status(200).json({
       message: "Post deleted successfully",
       post,
     });
-
   } catch (error) {
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        message: "Invalid post ID",
-      });
-    }
-
-    return res.status(500).json({
-      message: error.message,
-    });
+    return res.status(500).json({ message: error.message });
   }
 };
-
 
 // ========================
 // GET RECENT POSTS
@@ -130,10 +110,7 @@ exports.getRecentPosts = async (req, res) => {
       .limit(3);
 
     return res.status(200).json(posts);
-
   } catch (error) {
-    return res.status(500).json({
-      message: error.message,
-    });
+    return res.status(500).json({ message: error.message });
   }
 };
