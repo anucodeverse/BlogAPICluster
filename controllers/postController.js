@@ -7,17 +7,19 @@ const streamifier = require("streamifier");
 // ========================
 exports.createPost = async (req, res) => {
   try {
-    console.log("BODY:", req.body);
     console.log("FILE:", req.file);
+    console.log("BODY:", req.body);
     const { title, content, authorId } = req.body;
     let imageUrl = "";
-    if (req.file) {
-     const result = await cloudinary.uploader.upload(
-    `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-    {
-      folder: "posts",
-    }
-  );
+
+if (req.file) {
+  const base64 = req.file.buffer.toString("base64");
+
+  const dataURI = `data:${req.file.mimetype};base64,${base64}`;
+
+  const result = await cloudinary.uploader.upload(dataURI, {
+    folder: "posts",
+  });
 
   imageUrl = result.secure_url;
 }
