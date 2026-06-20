@@ -1,28 +1,39 @@
 const Post = require("../models/post");
 const postSchema = require("../validators/postValidator");
+const cloudinary = require("../config/cloudinary");
+const streamifier = require("streamifier");
 
-
-// ========================
-// CREATE POST (FIXED)
-// ========================
 exports.createPost = async (req, res) => {
   try {
-    console.log("BODY:", req.body);
     console.log("FILE:", req.file);
 
     const { title, content, authorId } = req.body;
 
-    const image = req.file?.path || "";
+    let imageUrl = "";
+
+    // 🚨 THIS IS WHERE YOUR BUG WAS
+    if (req.file) {
+      imageUrl = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "posts" },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result.secure_url);
+          }
+        );
+
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+      });
+    }
 
     const post = await Post.create({
       title,
       content,
-      image,
       authorId,
+      image: imageUrl,
     });
 
     return res.status(201).json(post);
-
   } catch (error) {
     console.log("CREATE ERROR:", error);
 
