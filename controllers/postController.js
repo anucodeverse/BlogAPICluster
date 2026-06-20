@@ -10,21 +10,17 @@ exports.createPost = async (req, res) => {
     console.log("FILE:", req.file);
     console.log("BODY:", req.body);
     const { title, content, authorId } = req.body;
-    let imageUrl = "";
+    
+
+  let imageUrl = "";
 
 if (req.file) {
-  const base64 = req.file.buffer.toString("base64");
-
-  const dataURI = `data:${req.file.mimetype};base64,${base64}`;
-
-  const result = await cloudinary.uploader.upload(dataURI, {
+  const result = await cloudinary.uploader.upload(req.file.path, {
     folder: "posts",
   });
 
   imageUrl = result.secure_url;
 }
-
-
     const post = await Post.create({
       title,
       content,
