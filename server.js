@@ -9,7 +9,8 @@ const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
-// Middleware
+
+// ✅ CORS FIX (PRODUCTION READY)
 app.use(
   cors({
     origin: [
@@ -20,7 +21,9 @@ app.use(
     credentials: true
   })
 );
+
 app.use(express.json());
+
 
 // MongoDB Connection
 mongoose
@@ -28,14 +31,17 @@ mongoose
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
 
+
 // Test Route
 app.get("/", (req, res) => {
   res.send("Sprint 10 API Running");
 });
 
-// Routes
+
+// ✅ IMPORTANT: FIX ROUTES (NO /api prefix)
 app.use("/posts", postRoutes);
 app.use("/users", userRoutes);
+
 
 // Server Start
 const PORT = process.env.PORT || 5000;
