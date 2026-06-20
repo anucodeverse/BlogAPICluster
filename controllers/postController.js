@@ -7,38 +7,18 @@ const postSchema = require("../validators/postValidator");
 // ========================
 exports.createPost = async (req, res) => {
   try {
-    console.log("REQ BODY:", req.body);
-    console.log("REQ FILE:", req.file);
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
 
     const { title, content, authorId } = req.body;
 
-    // ✅ SAFE IMAGE HANDLING (Cloudinary + fallback)
-    const image = req.file?.path || "";
+    let image = "";
 
-    // ✅ Basic validation before Joi
-    if (!title || !content || !authorId) {
-      return res.status(400).json({
-        message: "Title, content, and authorId are required",
-      });
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      image = result.secure_url;
     }
 
-    // Joi validation
-    const { error } = postSchema.validate({
-      title,
-      content,
-      authorId,
-      image,
-    });
-
-    if (error) {
-      console.log("VALIDATION ERROR:", error.details[0].message);
-
-      return res.status(400).json({
-        message: error.details[0].message,
-      });
-    }
-
-    // Create post in DB
     const post = await Post.create({
       title,
       content,
@@ -46,17 +26,13 @@ exports.createPost = async (req, res) => {
       authorId,
     });
 
-    return res.status(201).json({
-      message: "Post created successfully",
-      post,
-    });
+    return res.status(201).json(post);
 
   } catch (error) {
-    console.log("CREATE POST ERROR:", error);
+    console.log("CREATE ERROR:", error);
 
     return res.status(500).json({
-      message: "Internal Server Error",
-      error: error.message,
+      message: error.message,
     });
   }
 };
