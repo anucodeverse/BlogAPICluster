@@ -12,12 +12,7 @@ exports.createPost = async (req, res) => {
 
     const { title, content, authorId } = req.body;
 
-    let image = "";
-
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      image = result.secure_url;
-    }
+    const image = req.file?.path || "";
 
     const post = await Post.create({
       title,
