@@ -1,19 +1,36 @@
 const Post = require("../models/post");
+const postSchema = require("../validators/postValidator");
 
 // Create post
 exports.createPost = async (req, res) => {
   try {
+   
+    const image =
+  req.file?.secure_url ||
+  req.file?.path ||
+  "";
+  console.log("CLOUDINARY FILE:", req.file);
     const { title, content, authorId } = req.body;
 
-    if (!title || !content || !authorId) {
-      return res.status(400).json({
-        message: "title, content and authorId are required",
-      });
-    }
+    const { error } = postSchema.validate({
+      title,
+      content,
+      authorId,
+      image,
+    });
+
+    if (error) {
+  console.log("VALIDATION ERROR:", error.details[0].message);
+
+  return res.status(400).json({
+    message: error.details[0].message,
+  });
+}
 
     const post = await Post.create({
       title,
       content,
+      image,
       authorId,
     });
 
@@ -24,7 +41,6 @@ exports.createPost = async (req, res) => {
     });
   }
 };
-
 // Get all posts
 exports.getPosts = async (req, res) => {
   try {
@@ -105,3 +121,5 @@ exports.getRecentPosts = async (req, res) => {
     });
   }
 };
+
+
