@@ -7,20 +7,17 @@ const streamifier = require("streamifier");
 // ========================
 exports.createPost = async (req, res) => {
   try {
-    console.log("FILE:", req.file);
-    console.log("BODY:", req.body);
+    console.log("REQ FILE:", req.file);
+    console.log("REQ BODY:", req.body);
     const { title, content, authorId } = req.body;
-    
-
-  let imageUrl = "";
-
-if (req.file) {
-  const result = await cloudinary.uploader.upload(req.file.path, {
+    let imageUrl = "";
+    if (req.file) {
+    const result = await cloudinary.uploader.upload(req.file.path, {
     folder: "posts",
   });
-
   imageUrl = result.secure_url;
 }
+
     const post = await Post.create({
       title,
       content,
@@ -29,10 +26,17 @@ if (req.file) {
     });
 
     return res.status(201).json(post);
-  } catch (error) {
-    console.log("CREATE ERROR:", error);
-    return res.status(500).json({ message: error.message });
-  }
+  } 
+  catch (error) {
+  console.log("🔥🔥🔥 FULL ERROR:");
+  console.log(error);
+  console.log(error?.stack);
+
+  return res.status(500).json({
+    message: error.message,
+    stack: error.stack
+  });
+}
 };
 
 // ========================
