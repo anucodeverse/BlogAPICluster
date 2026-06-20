@@ -4,13 +4,17 @@ const postSchema = require("../validators/postValidator");
 // Create post
 exports.createPost = async (req, res) => {
   try {
-   
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+
+    const { title, content, authorId } = req.body;
+
+  
+
     const image =
   req.file?.secure_url ||
   req.file?.path ||
   "";
-  console.log("CLOUDINARY FILE:", req.file);
-    const { title, content, authorId } = req.body;
 
     const { error } = postSchema.validate({
       title,
@@ -20,12 +24,10 @@ exports.createPost = async (req, res) => {
     });
 
     if (error) {
-  console.log("VALIDATION ERROR:", error.details[0].message);
-
-  return res.status(400).json({
-    message: error.details[0].message,
-  });
-}
+      return res.status(400).json({
+        message: error.details[0].message,
+      });
+    }
 
     const post = await Post.create({
       title,
@@ -34,10 +36,14 @@ exports.createPost = async (req, res) => {
       authorId,
     });
 
-    res.status(201).json(post);
+    return res.status(201).json(post);
+
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
+    console.log("CREATE POST ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
     });
   }
 };
