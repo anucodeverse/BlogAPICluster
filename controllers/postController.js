@@ -7,29 +7,25 @@ const streamifier = require("streamifier");
 // ========================
 exports.createPost = async (req, res) => {
   try {
-    console.log("FILE:", req.file);
+    console.log("FILE RECEIVED:", req.file);
 
     const { title, content, authorId } = req.body;
 
-    let imageUrl = "";
+    let imageUrl = null;
 
-    if (req.file) {
+    if (req.file && req.file.buffer) {
       imageUrl = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: "posts" },
           (error, result) => {
-            if (error) {
-              console.log("Cloudinary Error:", error);
-              return reject(error);
-            }
-
-            console.log("Cloudinary Result:", result);
-
+            if (error) return reject(error);
             resolve(result.secure_url);
           }
         );
 
-        streamifier.createReadStream(req.file.buffer).pipe(stream);
+        require("streamifier")
+          .createReadStream(req.file.buffer)
+          .pipe(stream);
       });
     }
 
@@ -37,16 +33,13 @@ exports.createPost = async (req, res) => {
       title,
       content,
       authorId,
-      image: imageUrl,
+      image: imageUrl || "",
     });
 
     return res.status(201).json(post);
   } catch (error) {
-    console.log("CREATE ERROR:", error);
-
-    return res.status(500).json({
-      message: error.message,
-    });
+    console.log("ERROR:", error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
