@@ -1,21 +1,28 @@
 const Post = require("../models/post");
 const postSchema = require("../validators/postValidator");
 
-// Create post
+
+// ========================
+// CREATE POST (FIXED)
+// ========================
 exports.createPost = async (req, res) => {
   try {
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
+    console.log("REQ BODY:", req.body);
+    console.log("REQ FILE:", req.file);
 
     const { title, content, authorId } = req.body;
 
-  
+    // ✅ SAFE IMAGE HANDLING (Cloudinary + fallback)
+    const image = req.file?.path || "";
 
-    const image =
-  req.file?.secure_url ||
-  req.file?.path ||
-  "";
+    // ✅ Basic validation before Joi
+    if (!title || !content || !authorId) {
+      return res.status(400).json({
+        message: "Title, content, and authorId are required",
+      });
+    }
 
+    // Joi validation
     const { error } = postSchema.validate({
       title,
       content,
@@ -24,11 +31,14 @@ exports.createPost = async (req, res) => {
     });
 
     if (error) {
+      console.log("VALIDATION ERROR:", error.details[0].message);
+
       return res.status(400).json({
         message: error.details[0].message,
       });
     }
 
+    // Create post in DB
     const post = await Post.create({
       title,
       content,
@@ -36,7 +46,10 @@ exports.createPost = async (req, res) => {
       authorId,
     });
 
-    return res.status(201).json(post);
+    return res.status(201).json({
+      message: "Post created successfully",
+      post,
+    });
 
   } catch (error) {
     console.log("CREATE POST ERROR:", error);
@@ -47,19 +60,26 @@ exports.createPost = async (req, res) => {
     });
   }
 };
-// Get all posts
+
+
+// ========================
+// GET ALL POSTS
+// ========================
 exports.getPosts = async (req, res) => {
   try {
     const posts = await Post.find().populate("authorId");
-    res.json(posts);
+    return res.status(200).json(posts);
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: error.message,
     });
   }
 };
 
-// Get post by ID
+
+// ========================
+// GET POST BY ID
+// ========================
 exports.getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id).populate("authorId");
@@ -70,7 +90,7 @@ exports.getPostById = async (req, res) => {
       });
     }
 
-    res.status(200).json(post);
+    return res.status(200).json(post);
   } catch (error) {
     if (error.name === "CastError") {
       return res.status(400).json({
@@ -78,13 +98,16 @@ exports.getPostById = async (req, res) => {
       });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       message: error.message,
     });
   }
 };
 
-// Delete post
+
+// ========================
+// DELETE POST
+// ========================
 exports.deletePost = async (req, res) => {
   try {
     const post = await Post.findByIdAndDelete(req.params.id);
@@ -95,10 +118,11 @@ exports.deletePost = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Post deleted successfully",
       post,
     });
+
   } catch (error) {
     if (error.name === "CastError") {
       return res.status(400).json({
@@ -106,13 +130,16 @@ exports.deletePost = async (req, res) => {
       });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       message: error.message,
     });
   }
 };
 
-// Get recent posts
+
+// ========================
+// GET RECENT POSTS
+// ========================
 exports.getRecentPosts = async (req, res) => {
   try {
     const posts = await Post.find()
@@ -120,12 +147,11 @@ exports.getRecentPosts = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(3);
 
-    res.json(posts);
+    return res.status(200).json(posts);
+
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: error.message,
     });
   }
 };
-
-
