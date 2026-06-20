@@ -9,39 +9,19 @@ exports.createPost = async (req, res) => {
   try {
     console.log("BODY:", req.body);
     console.log("FILE:", req.file);
-
     const { title, content, authorId } = req.body;
-
     let imageUrl = "";
-
-try {
-  if (req.file) {
-    const buffer = req.file.buffer;
-
-    if (buffer) {
-      imageUrl = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "posts" },
-          (error, result) => {
-            if (error) {
-              console.log("Cloudinary ERROR:", error);
-              return reject(error);
-            }
-            resolve(result.secure_url);
-          }
-        );
-
-        require("streamifier")
-          .createReadStream(buffer)
-          .pipe(stream);
-      });
-    } else {
-      console.log("⚠️ No file buffer received");
+    if (req.file) {
+     const result = await cloudinary.uploader.upload(
+    `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+    {
+      folder: "posts",
     }
-  }
-} catch (err) {
-  console.log("UPLOAD ERROR:", err);
+  );
+
+  imageUrl = result.secure_url;
 }
+
 
     const post = await Post.create({
       title,
